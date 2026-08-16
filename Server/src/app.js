@@ -1,5 +1,6 @@
 import express from "express";
 import prisma from "./lib/prisma.js";
+import errorMiddleware from "./middleware/error.middleware.js";
 const app = express();
 import cors from "cors";
 
@@ -27,5 +28,7 @@ app.get("/api/health", async (req, res) => {
         });
     }
 });
+
+app.use(errorMiddleware);
 
 export default app;
