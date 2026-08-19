@@ -2,6 +2,7 @@ import express from "express";
 import prisma from "./lib/prisma.js";
 import errorMiddleware from "./middlewares/error.middleware.js"
 import authRoutes from "./routes/auth.routes.js";
+import workspaceRoutes from "./routes/workspace.routes.js"
 const app = express();
 import cors from "cors";
 
@@ -31,6 +32,7 @@ app.get("/api/health", async (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/workspace",workspaceRoutes);
 
 app.use(errorMiddleware);
 

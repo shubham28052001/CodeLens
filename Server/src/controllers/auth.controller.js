@@ -1,5 +1,5 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { registerUser, loginUser } from "../services/auth.service.js";
+import { registerUser, loginUser,getCurrentUser } from "../services/auth.service.js";
 import { successResponse } from "../utils/response.js";
 
 export const register = asyncHandler(async (req, res) => {
@@ -27,3 +27,15 @@ export const login = asyncHandler(async (req, res) => {
         user
     );
 });
+
+export const getMe = asyncHandler(async (req, res) => {
+  const user= await getCurrentUser(req.userId);
+
+  return successResponse(
+    res,
+    200,
+    "User fetched successfully",
+    user
+  );
+})
+

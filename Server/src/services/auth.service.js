@@ -1,65 +1,77 @@
 import prisma from "../lib/prisma.js";
-import {hashPassword,comparePassword} from "../utils/password.js";
-import {ConflictError,UnauthorizedError} from "../utils/errors.js"
-import {generateAccessToken} from "../utils/jwt.js"
+import { hashPassword, comparePassword } from "../utils/password.js";
+import { ConflictError, UnauthorizedError, NotFoundError } from "../utils/errors.js"
+import { generateAccessToken } from "../utils/jwt.js"
 
 export const registerUser = async (name, email, password) => {
     const existingUser = await prisma.user.findUnique({
         where: { email },
     });
-
-    if(existingUser){
+    if (existingUser) {
         throw new ConflictError("User already exists");
     }
-
-    const hashedPassword=await hashPassword(password);
-
+    const hashedPassword = await hashPassword(password);
     const user = await prisma.user.create({
-        data:{
+        data: {
             name,
             email,
-            password:hashedPassword
+            password: hashedPassword
         },
-        select:{
-            id:true,
-            name:true,
-            email:true,
-            createdAt:true
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true
         }
     });
     return user;
 }
 
 
-export const loginUser= async (email,password)=>{
+export const loginUser = async (email, password) => {
     const user = await prisma.user.findUnique({
-        where:{
+        where: {
             email
         }
     });
-    if(!user){
+    if (!user) {
         throw new UnauthorizedError("Invalid email or password");
     }
 
-    const isPasswordValid=await comparePassword(
+    const isPasswordValid = await comparePassword(
         password,
         user.password
     );
 
-    if(!isPasswordValid){
+    if (!isPasswordValid) {
         throw new UnauthorizedError("Invalid email or password");
     }
 
-    const token= generateAccessToken({
-        userId:user.id
-    });
+    const token = generateAccessToken(user.id);
 
     return {
-        user:{
-            id:user.id,
-            user:user.name,
-            email:user.email
+        user: {
+            id: user.id,
+            user: user.name,
+            email: user.email
         },
         token
     };
 };
+
+export const getCurrentUser = async (userId) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true
+        }
+    });
+
+    if (!user) {
+        throw new NotFoundError("User not found");
+    }
+    return user;
+}
